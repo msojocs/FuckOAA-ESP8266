@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FuckOAA</title>
+    <style>
+
+    </style>
+</head>
+<body>
+    <div>
+        配置界面
+    </div>
+    <div>
+        <div>
+            <h3>验证码识别服务器</h3>
+            <form id="stuInfo" onsubmit="return saveConfig(this), false" >
+                <label for="ocrServer">服务器：</label>
+                <input id="ocrServer" name="ocrServer" /><br />
+                <input type="submit" value="保存" />
+            </form>
+        </div>
+        <br />
+        <div>
+            <h3>学号密码</h3>
+            <form id="stuInfo" onsubmit="return saveConfig(this), false" >
+                <label for="sid">学号：</label>
+                <input id="sid" name="sid" /><br />
+                <label for="spass">密码：</label>
+                <input id="spass" name="spass" type="password" /><br />
+                <input type="submit" value="保存" />
+            </form>
+        </div>
+        <br />
+        <div>
+            <h3>选课信息</h3>
+            <form id="courseInfo" onsubmit="return saveConfig(this), false" >
+                <label for="profiledId：">profiledId：</label>
+                <input id="profiledId" name="profiledId" /><br />
+                <label for="courseName">课程：</label>
+                <input id="courseName" name="courseName" /><br />
+                <button >保存</button>
+            </form>
+        </div>
+    </div>
+    <pre>
+
+    </pre>
+    <script>
+        // 简易GET,POST请求封装
+        const HTTP = {
+            get(url) {
+                return new Promise((resolve, reject) => {
+                const Http = new XMLHttpRequest()
+                Http.open('GET', url)
+                Http.send()
+                Http.onloadend = e => {
+                    resolve(Http)
+                }
+                Http.onerror = e => reject
+                })
+            },
+            post(url, body=null) {
+                return new Promise((resolve, reject) => {
+                    const Http = new XMLHttpRequest()
+                    Http.open('POST', url)
+                    Http.setRequestHeader('content-type', 'application/x-www-form-urlencoded')
+                    Http.send(body)
+                    Http.onloadend = e => {
+                        resolve(Http)
+                    }
+                    Http.onerror = e => reject
+                })
+            }
+        }
+        function saveConfig(e){
+            // e.preventDefault();
+            const form = new FormData(e)
+            let data = []
+            form.forEach((v, k)=>{
+                data.push(`${k}=${v}`)
+            })
+            data = data.join('&')
+            console.log(data)
+            HTTP.post('/saveConfig', data).then(res=>{
+                console.log(res)
+            }).catch(err=>{
+                console.error(err)
+            })
+            console.log(e)
+        }
+        (()=>{
+            // getConfig
+            HTTP.get('/getConfig').then(res=>{
+                console.log(res)
+                const config = JSON.parse(res.responseText || "{}")
+                const map = {
+                    profiled_id: "profiledId",
+                    sid: "sid",
+                    spass: "spass",
+                    ocr_server: "ocrServer",
+                    course_name: "courseName",
+                }
+                for(let k in config){
+                    map[k] && (document.getElementById(map[k]).value = config[k])
+                }
+            })
+        })()
+    </script>
+</body>
+</html>
