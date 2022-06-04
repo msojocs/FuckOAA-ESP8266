@@ -22,4 +22,7 @@ public:
     void setIP(String ip);
     void test();
 };
+
+extern UI ui;
+
 #endif

@@ -1,5 +1,11 @@
 #include "server.h"
-
+#include "wifi.h"
+#include "storage.h"
+/**
+ * https://github.com/me-no-dev/ESPAsyncWebServer#important-things-to-remember
+ * 异步服务器内部不能有delay yield
+ * 
+ * */
 AsyncWebServer server(80);
 
 
@@ -33,14 +39,13 @@ void Server_Start()
     });
 
     // Send a GET request to <IP>/get?message=<message>
-    server.on("/get", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        String message;
-        if (request->hasParam(PARAM_MESSAGE)) {
-            message = request->getParam(PARAM_MESSAGE)->value();
-        } else {
-            message = "No message sent";
-        }
-        request->send(200, "text/plain", "Hello, GET: " + message);
+    server.on("/test", HTTP_GET, [] (AsyncWebServerRequest *request) {
+        globalConfig["sta"][0] = "CrazyBox_0457B8";
+        globalConfig["sta"][1] = "yycy418418a";
+        WIFI_Status = 0;
+        Storage_SaveConfig();
+        request->send(200, "text/plain", "Hello ");
+        // request->send(200, "text/plain", "Hello " + String(test));
     });
 
     // Send a POST request to <IP>/post with a form field message set to <message>

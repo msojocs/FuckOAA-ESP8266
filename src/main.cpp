@@ -7,42 +7,33 @@
 
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>
-#include <ESP8266WiFiMulti.h>
-
-#include <ESP8266HTTPClient.h>
 #include "ui.h"
 #include "LittleFS.h"
 #include "storage.h"
 #include "server.h"
 #include "cuit.h"
+#include "wifi.h"
+#include <ESP8266WiFi.h>
+#include <ESP8266WiFiMulti.h>
+
 
 ESP8266WiFiMulti WiFiMulti;
-UI ui;
 
 void setup()
 {
     ui.init();
     Serial.begin(115200);
-    // Serial.setDebugOutput(true);
-    Serial.println();
-    Serial.println();
-    Serial.println();
-
+    Serial.setDebugOutput(true);
+    Serial.println("\r\n\r\n\r\n");
     delay(1000);
     Storage_ReadConfig();
     
     Serial.println("wifi...");
     WiFi.mode(WIFI_STA);
-    Serial.println("connecting0...");
+    Serial.println("connecting...");
 
-    Serial.println("check...");
-    if (!globalConfig.containsKey("ap"))
-    {
-        Serial.println("ap lost...");
-        return;
-    }
-    WiFiMulti.addAP(globalConfig["ap"][0], globalConfig["ap"][1]);
+    // WiFiMulti.addAP(globalConfig["ap"][0], globalConfig["ap"][1]);
+    WIFI_Status = 1;
 
     if (WiFiMulti.run(5000) == WL_CONNECTED)
     {
@@ -54,21 +45,22 @@ void setup()
     }
     else
     {
+        if (!globalConfig.containsKey("ap"))
+        {
+            Serial.println("ap lost...");
+        }
         Serial.println("WiFi not connected!");
-        WiFi.mode(WIFI_AP);
-        String apssid = globalConfig["sta"][0] | "Esp8266";
-        String appsk = globalConfig["sta"][1] | "12345678";
-        WiFi.softAP(apssid, appsk);
-        IPAddress myIP = WiFi.softAPIP();
-        Serial.print("AP IP address: ");
-        Serial.println(myIP);
-        ui.setIP(myIP.toString());
+        WiFi.mode(WIFI_AP_STA);
+        String apssid = globalConfig["ap"][0] | "Esp8266";
+        String appsk = globalConfig["ap"][1] | "12345678";
+        WIFI_CreateAP(apssid, appsk);
     }
     Server_Start();
 }
 
 void loop()
 {
+    WIFI_Monitor();
     ui.setNum(globalConfig["sid"]);
     delay(1000);
     return;
