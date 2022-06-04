@@ -1,5 +1,6 @@
 #include "cuit.h"
 #include "storage.h"
+#include "ui.h"
 
 typedef void (*CUIT_STATUS_CB)(void);
 CuitStatus_t CUIT_STATUS;
@@ -228,6 +229,7 @@ boolean CUIT::fuckCourse(String profiledId, String lessonId){
 
 CUIT_STATUS_CB cuitStatusCB[CUIT_STATUS_COUNT] = {nullptr};
 void CUIT_OAA_CAPTCHA_F(){
+    ui.addNotice("尝试获取识别验证码");
     String captchaCode;
     while (true)
     {
@@ -242,15 +244,20 @@ void CUIT_OAA_CAPTCHA_F(){
         boolean result = cuit.checkCaptcha(captchaCode, globalConfig["profiled_id"]);
         Serial.println("checkCaptcha: " + String(result));
         if (result){
+            ui.addNotice("验证码识别成功");
             CUIT_STATUS = CUIT_OAA_FUCK;
             break;
         }
-        if(CUIT_STATUS != CUIT_OAA_CAPTCHA)break;
+        if(CUIT_STATUS != CUIT_OAA_CAPTCHA){
+            ui.addNotice("异常终止 :(");
+            break;
+        }
         delay(100);
     }
 }
 void CUIT_OAA_FUCK_F(){
     // 检测开放状态
+    ui.addNotice("检测选课是否开放");
     while (true)
     {
         boolean result = cuit.isAvailable(globalConfig["profiled_id"]);
@@ -258,7 +265,11 @@ void CUIT_OAA_FUCK_F(){
         if (result)
             break;
 
-        if(CUIT_STATUS != CUIT_OAA_FUCK)return;
+        if(CUIT_STATUS != CUIT_OAA_FUCK){
+            ui.addNotice("异常终止 :(");
+            return;
+        }
+        ui.addNotice("暂时不能选课");
         delay(1000);
     }
 
@@ -270,21 +281,27 @@ void CUIT_OAA_FUCK_F(){
     if (lessonId == "")
     {
         Serial.println("没有找到相关课程");
+        ui.addNotice("没有找到相关课程");
         CUIT_STATUS = CUIT_NO_ACTION;
         return;
     }
 
     // 抢课
     Serial.println("抢课");
+    ui.addNotice("开始抢课");
     while (true)
     {
         boolean result = cuit.fuckCourse(globalConfig["profiled_id"], lessonId);
         Serial.println("fuckCourse: " + String(result));
         if (result){
+            ui.addNotice("选课成功 ^_^");
             CUIT_STATUS = CUIT_NO_ACTION;
             break;
         }
-        if(CUIT_STATUS != CUIT_OAA_FUCK)return;
+        if(CUIT_STATUS != CUIT_OAA_FUCK){
+            ui.addNotice("异常终止 :(");
+            return;
+        }
         delay(200);
     }
 }

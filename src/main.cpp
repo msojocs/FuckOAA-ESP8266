@@ -42,6 +42,7 @@ void setup()
         Serial.print(" ");
         Serial.println(WiFi.localIP());
         ui.setIP(WiFi.localIP().toString());
+        ui.addNotice("WIFI已连接 ^_^");
     }
     else
     {
@@ -49,6 +50,7 @@ void setup()
         {
             Serial.println("ap lost...");
         }
+        ui.addNotice("创建热点 >_<");
         Serial.println("WiFi not connected!");
         WiFi.mode(WIFI_AP_STA);
         String apssid = globalConfig["ap"][0] | "Esp8266";
@@ -57,6 +59,7 @@ void setup()
     }
     Server_Start();
     CUIT_Init();
+    ui.addNotice("初始化完毕!");
 }
 
 void loop()

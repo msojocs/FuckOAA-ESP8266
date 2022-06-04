@@ -1,6 +1,7 @@
 #ifndef __UI_H__
 #define __UI_H__
 #include <U8g2lib.h>
+#include <deque>
 
 #ifdef U8X8_HAVE_HW_SPI
 #include <SPI.h>
@@ -13,12 +14,13 @@ class UI
 {
 private:
     /* data */
+    std::deque<String> log;
 public:
     UI(/* args */);
     ~UI();
     void init();
     void setNum(String num);
-    void setNotice(String notice);
+    void addNotice(String notice);
     void setIP(String ip);
     void test();
 };
