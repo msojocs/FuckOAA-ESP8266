@@ -42,7 +42,7 @@ void Server_Start()
     });
 
     // Send a GET request to <IP>/get?message=<message>
-    server.on("/test", HTTP_GET, [] (AsyncWebServerRequest *request) {
+    server.on("/startFuck", HTTP_GET, [] (AsyncWebServerRequest *request) {
         CUIT_Init(true);
         CUIT_STATUS = CUIT_OAA_CAPTCHA;
         request->send(200, "text/plain", "Hello ");
