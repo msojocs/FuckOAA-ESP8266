@@ -1,6 +1,9 @@
 #include "server.h"
 #include "wifi.h"
 #include "storage.h"
+#include "cuit.h"
+
+
 /**
  * https://github.com/me-no-dev/ESPAsyncWebServer#important-things-to-remember
  * 异步服务器内部不能有delay yield
@@ -40,10 +43,8 @@ void Server_Start()
 
     // Send a GET request to <IP>/get?message=<message>
     server.on("/test", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        globalConfig["sta"][0] = "CrazyBox_0457B8";
-        globalConfig["sta"][1] = "yycy418418a";
-        WIFI_Status = 0;
-        Storage_SaveConfig();
+        CUIT_Init(true);
+        CUIT_STATUS = CUIT_OAA_CAPTCHA;
         request->send(200, "text/plain", "Hello ");
         // request->send(200, "text/plain", "Hello " + String(test));
     });
@@ -69,6 +70,9 @@ void Server_Start()
         }
         if (request->hasParam("spass", true)) {
             globalConfig["spass"] = request->getParam("spass", true)->value();
+        }
+        if (request->hasParam("cookie", true)) {
+            globalConfig["cookie"] = request->getParam("cookie", true)->value();
         }
         if (request->hasParam("profiledId", true)) {
             globalConfig["profiled_id"] = request->getParam("profiledId", true)->value();

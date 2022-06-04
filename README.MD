@@ -43,3 +43,7 @@ Docker镜像相关源代码在这里(仅供参考,可忽略): https://github.com
 ### 屏幕显示
 
 ![屏幕显示](res/imgs/screen.jpg)
+
+### WEB控制端
+
+![WEB控制端](res/imgs/web.jpg)

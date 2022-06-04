@@ -28,8 +28,10 @@
             <form id="stuInfo" onsubmit="return saveConfig(this), false" >
                 <label for="sid">学号：</label>
                 <input id="sid" name="sid" /><br />
-                <label for="spass">密码：</label>
+                <label for="spass">密码(暂时无用)：</label>
                 <input id="spass" name="spass" type="password" /><br />
+                <label for="cookie">cookie：</label>
+                <input id="cookie" name="cookie" type="text" /><br />
                 <input type="submit" value="保存" />
             </form>
         </div>
@@ -102,6 +104,7 @@
                     spass: "spass",
                     ocr_server: "ocrServer",
                     course_name: "courseName",
+                    cookie: "cookie",
                 }
                 for(let k in config){
                     map[k] && (document.getElementById(map[k]).value = config[k])

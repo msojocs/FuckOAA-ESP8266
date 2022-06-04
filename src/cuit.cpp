@@ -1,8 +1,13 @@
 #include "cuit.h"
+#include "storage.h"
 
-CUIT::CUIT(String cookie, String ocrServer)
+typedef void (*CUIT_STATUS_CB)(void);
+CuitStatus_t CUIT_STATUS;
+
+CUIT cuit((String)globalConfig["ocrServer"]);
+
+CUIT::CUIT(String ocrServer)
 {
-    this->cookie = cookie;
     this->ocrServer = ocrServer;
 }
 
@@ -10,10 +15,18 @@ CUIT::~CUIT()
 {
 }
 
-void CUIT::getPic(){
+void CUIT::setCookie(String cookie){
+    this->cookie = cookie;
+}
+void CUIT::setOCRServer(String ocrServer){
+    this->ocrServer = ocrServer;
+}
+
+String CUIT::getCaptcha(){
     String url = "http://jwgl.cuit.edu.cn/eams/captcha/image.action";
     WiFiClient client;
     HTTPClient http;
+    String pic;
 
     http.begin(client, url);
     http.addHeader("cookie", this->cookie);
@@ -27,20 +40,23 @@ void CUIT::getPic(){
         // 请求成功
         if(httpCode == HTTP_CODE_OK){
             // 状态码OK
-            this->pic = http.getString();
+            pic = http.getString();
         }
     }
     http.end();
+    return pic;
 }
 
-String CUIT::postOCRPic(){
+String CUIT::postOCRPic(String captcha){
     WiFiClient client;
     HTTPClient http;
+    Serial.println("ocr server: " + this->ocrServer);
+    delay(100);
 
     http.begin(client, this->ocrServer);
     http.addHeader("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary8XsPye75Y6cInBRK");
     
-    int httpCode = http.POST("------WebKitFormBoundary8XsPye75Y6cInBRK\r\nContent-Disposition: form-data; name=\"captcha\" ; filename=\"captcha.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n" + this->pic + "\r\n------WebKitFormBoundary8XsPye75Y6cInBRK--");
+    int httpCode = http.POST("------WebKitFormBoundary8XsPye75Y6cInBRK\r\nContent-Disposition: form-data; name=\"captcha\" ; filename=\"captcha.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n" + captcha + "\r\n------WebKitFormBoundary8XsPye75Y6cInBRK--");
     if(httpCode <= 0){
         Serial.printf("ocr 请求失败 code: %d \n", httpCode);
     }else{
@@ -61,7 +77,7 @@ String CUIT::postOCRPic(){
     return "";
 }
 
-boolean CUIT::checkCaptcha(String captcha, String profiledId){
+boolean CUIT::checkCaptcha(String captchaCode, String profiledId){
     String url = "http://jwgl.cuit.edu.cn/eams/stdElectCourse!defaultPage.action";
     WiFiClient client;
     HTTPClient http;
@@ -69,13 +85,18 @@ boolean CUIT::checkCaptcha(String captcha, String profiledId){
     http.addHeader("cookie", this->cookie);
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
 
-    int httpCode = http.POST("captcha_response=" + captcha + "&electionProfile.id=" + profiledId);
+    int httpCode = http.POST("captcha_response=" + captchaCode + "&electionProfile.id=" + profiledId);
     if(httpCode > 0){
         Serial.println("checkCaptcha code: " + String(httpCode));
         Serial.println("location: " + http.getLocation());
-        if(httpCode == HTTP_CODE_OK)return true;
+        if(httpCode == HTTP_CODE_OK){
+            this->captchaCode = captchaCode;
+            return true;
+        }
         if(http.getLocation().indexOf("sso") > 0){
             Serial.println("cookie失效");
+
+            CUIT_STATUS = CUIT_NO_ACTION;
             return false;
         }
     }
@@ -122,20 +143,20 @@ String CUIT::courseName2Id(String profiledId, String courseName){
     return result;
 }
 
-boolean CUIT::isAvailable(String captcha, String profiledId){
+boolean CUIT::isAvailable(String profiledId){
     String url = "http://jwgl.cuit.edu.cn/eams/stdElectCourse!defaultPage.action";
     WiFiClient client;
     HTTPClient http;
     http.begin(client, url);
     http.addHeader("cookie", this->cookie);
     http.addHeader("Content-Type", "application/x-www-form-urlencoded");
-    
-    int httpCode = http.POST("captcha_response=" + captcha + "&electionProfile.id=" + profiledId);
+
+    int httpCode = http.POST("captcha_response=" + this->captchaCode + "&electionProfile.id=" + profiledId);
     if(httpCode > 0){
-        Serial.println("checkCaptcha code: " + String(httpCode));
+        Serial.println("isAvailable code: " + String(httpCode));
         if(httpCode == HTTP_CODE_OK){
             int len = http.getSize();
-            Serial.println("checkCaptcha len: " + String(len));
+            Serial.println("isAvailable len: " + String(len));
             char buff[128] = { 0 };
             while (http.connected() && (len > 0 || len == -1))
             {
@@ -147,7 +168,6 @@ boolean CUIT::isAvailable(String captcha, String profiledId){
                     break;
                 }
 
-                // write it to Serial
                 // TODO: 分段读取可能会导致 "不在选课时间内" 被拆分，导致判断错误
                 if(String(buff).indexOf("不在选课时间内") > 0){
                     http.end();
@@ -161,7 +181,6 @@ boolean CUIT::isAvailable(String captcha, String profiledId){
                 if(c < 128)break;
             }
             http.end();
-            
             return true;
         }
         if(http.getLocation().indexOf("sso") > 0){
@@ -198,4 +217,86 @@ boolean CUIT::fuckCourse(String profiledId, String lessonId){
         }
     }
     return false;
+}
+
+// ================================================================================
+// ================================================================================
+// ================================================================================
+// ================================================================================
+// ================================================================================
+
+
+CUIT_STATUS_CB cuitStatusCB[CUIT_STATUS_COUNT] = {nullptr};
+void CUIT_OAA_CAPTCHA_F(){
+    String captchaCode;
+    while (true)
+    {
+        String captcha = cuit.getCaptcha();
+        delay(100);
+
+        Serial.println("postOCRPic");
+        captchaCode = cuit.postOCRPic(captcha);
+        Serial.println("postOCRPic: " + captchaCode);
+        delay(100);
+
+        boolean result = cuit.checkCaptcha(captchaCode, globalConfig["profiled_id"]);
+        Serial.println("checkCaptcha: " + String(result));
+        if (result){
+            CUIT_STATUS = CUIT_OAA_FUCK;
+            break;
+        }
+        if(CUIT_STATUS != CUIT_OAA_CAPTCHA)break;
+        delay(100);
+    }
+}
+void CUIT_OAA_FUCK_F(){
+    // 检测开放状态
+    while (true)
+    {
+        boolean result = cuit.isAvailable(globalConfig["profiled_id"]);
+        Serial.println("isAvailable: " + String(result));
+        if (result)
+            break;
+
+        if(CUIT_STATUS != CUIT_OAA_FUCK)return;
+        delay(1000);
+    }
+
+    // 获取lessonId
+    Serial.println("获取lessonId");
+    String lessonId = cuit.courseName2Id(globalConfig["profiled_id"], globalConfig["course_name"]);
+    Serial.println("获取lessonId: " + lessonId);
+    delay(200);
+    if (lessonId == "")
+    {
+        Serial.println("没有找到相关课程");
+        CUIT_STATUS = CUIT_NO_ACTION;
+        return;
+    }
+
+    // 抢课
+    Serial.println("抢课");
+    while (true)
+    {
+        boolean result = cuit.fuckCourse(globalConfig["profiled_id"], lessonId);
+        Serial.println("fuckCourse: " + String(result));
+        if (result){
+            CUIT_STATUS = CUIT_NO_ACTION;
+            break;
+        }
+        if(CUIT_STATUS != CUIT_OAA_FUCK)return;
+        delay(200);
+    }
+}
+void CUIT_Init(boolean onlyData){
+    cuit.setOCRServer(globalConfig["ocr_server"]);
+    cuit.setCookie(globalConfig["cookie"]);
+    if(!onlyData){
+        cuitStatusCB[CUIT_OAA_CAPTCHA] = CUIT_OAA_CAPTCHA_F;
+        cuitStatusCB[CUIT_OAA_FUCK] = CUIT_OAA_FUCK_F;
+    }
+}
+
+void CUIT_Monitor(){
+    if(cuitStatusCB[CUIT_STATUS] != nullptr)cuitStatusCB[CUIT_STATUS]();
 }
