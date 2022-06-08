@@ -15,6 +15,7 @@
 #include "wifi.h"
 #include <ESP8266WiFi.h>
 #include <ESP8266WiFiMulti.h>
+#include "sso.h"
 
 
 ESP8266WiFiMulti WiFiMulti;
@@ -67,6 +68,7 @@ void loop()
     WIFI_Monitor();
     ui.setNum(globalConfig["sid"]);
     CUIT_Monitor();
-
+    // SSO_Login();
+    
     delay(100);
 }

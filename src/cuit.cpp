@@ -275,6 +275,7 @@ void CUIT_OAA_FUCK_F(){
 
     // 获取lessonId
     Serial.println("获取lessonId");
+    ui.addNotice("获取ID: " + (String)globalConfig["course_name"]);
     String lessonId = cuit.courseName2Id(globalConfig["profiled_id"], globalConfig["course_name"]);
     Serial.println("获取lessonId: " + lessonId);
     delay(200);
@@ -288,7 +289,7 @@ void CUIT_OAA_FUCK_F(){
 
     // 抢课
     Serial.println("抢课");
-    ui.addNotice("开始抢课");
+    ui.addNotice("开始抢课: " + (String)globalConfig["course_name"]);
     while (true)
     {
         boolean result = cuit.fuckCourse(globalConfig["profiled_id"], lessonId);

@@ -4,6 +4,9 @@
         "*.wxss": "css",
         "*.wxs": "javascript",
         "*.cc": "cpp",
-        "deque": "cpp"
+        "deque": "cpp",
+        "algorithm": "cpp",
+        "memory": "cpp",
+        "numeric": "cpp"
     }
 }

@@ -5,7 +5,6 @@
 #include <ESP8266HTTPClient.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
-#include <iostream>
 
 typedef enum CuitStatus 
 {
