@@ -6,5 +6,5 @@
 #include <ArduinoJson.h>
 #include "storage.h"
 
-String OCR_postOCRPic(String captcha);
+String OCR_postOCRPic(String& captcha);
 #endif

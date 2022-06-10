@@ -5,6 +5,7 @@
 #include <ESP8266HTTPClient.h>
 #include <Arduino.h>
 #include <ArduinoJson.h>
+#include "ocr.h"
 
 typedef enum CuitStatus 
 {
@@ -25,7 +26,6 @@ public:
     void setCookie(String cookie);
     void setOCRServer(String ocrServer);
     String getCaptcha();
-    String postOCRPic(String captcha);
     boolean checkCaptcha(String captcha, String profiledId);
     String courseName2Id(String profiledId, String name);
     boolean isAvailable(String profiledId);

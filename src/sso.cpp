@@ -1,5 +1,6 @@
 #include "sso.h"
 #include "ocr.h"
+#include "oaa.h"
 
 SSO::SSO(String id, String password)
 {
@@ -17,7 +18,7 @@ void SSO::prepare(){
     const char* header[] = {"set-cookie"};
     client.setInsecure();
     https.begin(client, url);
-    https.addHeader("cookie", this->SSO_SESSION);
+    https.addHeader("cookie", this->SSO_SESSION + ";" + this->SSO_TGC);
     https.setUserAgent("Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/102.0.5005.63 Safari/537.36 Edg/102.0.1245.33");
     https.collectHeaders(header, 1);
     int httpCode = https.GET();
@@ -34,7 +35,12 @@ void SSO::prepare(){
             while (client.available())
             {
                 buffer = client.readStringUntil('>');
-                if(buffer.indexOf("execution") > 0){
+                if(buffer.indexOf("登录成功") != -1){
+                    // 已登录状态
+                    this->loginOK = true;
+                    break;
+                }
+                if(buffer.indexOf("execution") != -1){
                     int start = buffer.indexOf("value=\"");
                     int end = buffer.indexOf("\"", start + 7);
                     this->SSO_Execution = buffer.substring(start + 7, end);
@@ -90,6 +96,13 @@ String SSO::getCaptcha(){
     return captcha;
 }
 
+/**
+ * 使用验证码登录统一中心
+ * 
+ * @param captchaCode 验证码
+ * @return -2未知错误|1登录成功|2验证码无效|3用户名或密码错误
+ * 
+ * */
 int SSO::login(String& captchaCode){
     WiFiClientSecure client;
     HTTPClient https;
@@ -105,20 +118,21 @@ int SSO::login(String& captchaCode){
     String data = "execution=" + this->SSO_Execution + "&_eventId=submit&lm=usernameLogin&geolocation=&username=" + this->id + "&password=" + this->password + "&captcha=" + captchaCode;
     Serial.println("login data: " + data);
     int httpCode = https.POST(data);
+    Serial.println("响应码：" + String(httpCode));
     String buffer;
     if(httpCode > 0){
         if(httpCode == HTTP_CODE_OK){
             while (client.available())
             {
                 buffer = client.readStringUntil('>');
-                if(buffer.indexOf("textError") > 0){
+                if(buffer.indexOf("textError") != -1){
                     client.readStringUntil('>');
                     buffer = client.readStringUntil('>');
                     // 有错误信息
                     int end = buffer.indexOf("<");
                     Serial.println(buffer.substring(0, end));
                 }
-                if(buffer.indexOf("登录成功") > 0){
+                if(buffer.indexOf("登录成功") != -1){
                     String cookie = https.header("set-cookie");
                     Serial.println("get cookie: " + cookie);
                     int start = cookie.indexOf("TGC");
@@ -126,16 +140,19 @@ int SSO::login(String& captchaCode){
                     this->SSO_TGC = cookie.substring(start, end);
                     Serial.println("TGC: " + this->SSO_TGC);
                     https.end();
+                    globalConfig["SSO_TGC"] = this->SSO_TGC;
+                    Storage_SaveConfig();
+                    this->loginOK = true;
                     return 1;
-                }else if(buffer.indexOf("验证码无效") > 0){
+                }else if(buffer.indexOf("验证码无效") != -1){
                     https.end();
                     return 2;
-                }else if(buffer.indexOf("密码错误") > 0){
+                }else if(buffer.indexOf("密码错误") != -1){
                     // 用户名或密码错误
                     https.end();
                     return 3;
                 }
-                if(buffer.indexOf("execution") > 0){
+                if(buffer.indexOf("execution") != -1){
                     int start = buffer.indexOf("value=\"");
                     int end = buffer.indexOf("\"", start + 7);
                     this->SSO_Execution = buffer.substring(start + 7, end);
@@ -153,14 +170,29 @@ int SSO::login(String& captchaCode){
     return -2;
 }
 
-SSO sso("2019", "123");
-void SSO_Login(){
-    sso.prepare();
-    String captcha = sso.getCaptcha();
-    Serial.println("tupian：" + captcha);
-    String captchaCode = OCR_postOCRPic(captcha);
-    Serial.println("SSO验证码识别结果：" + captchaCode);
-    int r = sso.login(captchaCode);
-    Serial.println("登录结果：" + String(r));
+String SSO::getTGC(){
+    return this->SSO_TGC;
+}
+boolean SSO::isLogin(){
+    return this->loginOK;
+}
 
+void SSO_Login(){
+    SSO sso(globalConfig["sid"], globalConfig["spass"]);
+    int r = 1;
+    sso.prepare();
+    if(!sso.isLogin()){
+        String captcha = sso.getCaptcha();
+        Serial.println("tupian：" + captcha);
+        String captchaCode = OCR_postOCRPic(captcha);
+        Serial.println("SSO验证码识别结果：" + captchaCode);
+        r = sso.login(captchaCode);
+        Serial.println("登录结果：" + String(r));
+    }
+    if(r == 1){
+        String tgc = sso.getTGC();
+        Serial.println("tgc: " + tgc);
+        OAA oaa;
+        oaa.loginByTGC(tgc);
+    }
 }

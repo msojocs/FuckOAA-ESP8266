@@ -65,10 +65,13 @@ void setup()
 
 void loop()
 {
+    
     WIFI_Monitor();
     ui.setNum(globalConfig["sid"]);
-    CUIT_Monitor();
-    // SSO_Login();
+    if(WiFi.isConnected()){
+        CUIT_Monitor();
+        // SSO_Login();
+    }
     
-    delay(100);
+    delay(60000);
 }

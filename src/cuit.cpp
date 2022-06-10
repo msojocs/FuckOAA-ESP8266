@@ -48,36 +48,6 @@ String CUIT::getCaptcha(){
     return pic;
 }
 
-String CUIT::postOCRPic(String captcha){
-    WiFiClient client;
-    HTTPClient http;
-    Serial.println("ocr server: " + this->ocrServer);
-    delay(100);
-
-    http.begin(client, this->ocrServer);
-    http.addHeader("Content-Type", "multipart/form-data; boundary=----WebKitFormBoundary8XsPye75Y6cInBRK");
-    
-    int httpCode = http.POST("------WebKitFormBoundary8XsPye75Y6cInBRK\r\nContent-Disposition: form-data; name=\"captcha\" ; filename=\"captcha.jpg\"\r\nContent-Type: image/jpeg\r\n\r\n" + captcha + "\r\n------WebKitFormBoundary8XsPye75Y6cInBRK--");
-    if(httpCode <= 0){
-        Serial.printf("ocr 请求失败 code: %d \n", httpCode);
-    }else{
-        // Serial.printf("ocr code: %d \n", httpCode);
-        if(httpCode == HTTP_CODE_OK){
-            String result = http.getString();
-            // Serial.println(result);
-            
-            DynamicJsonDocument doc(1024);
-            JsonObject json;
-            deserializeJson(doc, result);
-            json = doc.as<JsonObject>();
-            http.end();
-            return json["result"];
-        }
-    }
-    http.end();
-    return "";
-}
-
 boolean CUIT::checkCaptcha(String captchaCode, String profiledId){
     String url = "http://jwgl.cuit.edu.cn/eams/stdElectCourse!defaultPage.action";
     WiFiClient client;
@@ -237,7 +207,7 @@ void CUIT_OAA_CAPTCHA_F(){
         delay(100);
 
         Serial.println("postOCRPic");
-        captchaCode = cuit.postOCRPic(captcha);
+        captchaCode = OCR_postOCRPic(captcha);
         Serial.println("postOCRPic: " + captchaCode);
         delay(100);
 

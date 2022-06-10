@@ -1,6 +1,12 @@
 #include "ocr.h"
 
-String OCR_postOCRPic(String captcha){
+/**
+ * OCR识别验证码
+ * 
+ * @param captcha 字符串（二进制）形式验证码图像数据
+ * @return 四位验证码字符
+ * */
+String OCR_postOCRPic(String& captcha){
     WiFiClient client;
     HTTPClient http;
     Serial.println("ocr server: " + (String)globalConfig["ocr_server"]);
