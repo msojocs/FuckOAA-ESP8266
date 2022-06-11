@@ -29,7 +29,7 @@ void Server_Start()
     // Send a GET request to <IP>/get?message=<message>
     server.on("/startFuck", HTTP_GET, [] (AsyncWebServerRequest *request) {
         CUIT_Init(true);
-        CUIT_STATUS = CUIT_OAA_CAPTCHA;
+        CUIT_STATUS = CUIT_SSO_LOGIN;
         request->send(200, "text/plain", "Hello ");
         // request->send(200, "text/plain", "Hello " + String(test));
     });
@@ -56,8 +56,8 @@ void Server_Start()
         if (request->hasParam("spass", true)) {
             globalConfig["spass"] = request->getParam("spass", true)->value();
         }
-        if (request->hasParam("cookie", true)) {
-            globalConfig["cookie"] = request->getParam("cookie", true)->value();
+        if(request->hasParam("sid", true) || request->hasParam("spass", true)){
+            globalConfig["SSO_TGC"] = globalConfig["OAA_SESSION"] = "";
         }
         if (request->hasParam("profiledId", true)) {
             globalConfig["profiled_id"] = request->getParam("profiledId", true)->value();

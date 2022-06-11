@@ -45,5 +45,5 @@ public:
     String getTGC();
     boolean isLogin();
 };
-void SSO_Login();
+
 #endif

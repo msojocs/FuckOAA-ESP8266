@@ -62,7 +62,7 @@ void WIFI_Check(){
         // Serial.println("wifi 启动热点");
         WiFi.mode(WIFI_AP_STA);
         WIFI_Connect(globalConfig["sta"][0], globalConfig["sta"][1]);
-        WIFI_CreateAP();
+        WIFI_CreateAP(globalConfig["ap"][0], globalConfig["ap"][1]);
     }else{
         // Serial.println("wifi 已链接");
         // 已链接

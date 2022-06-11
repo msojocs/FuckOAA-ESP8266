@@ -17,10 +17,17 @@ class OAA
 private:
     /* data */
     String OAA_SESSION = globalConfig["OAA_SESSION"];
+    String captchaCode;
 public:
     OAA(/* args */);
     ~OAA();
     int loginByTGC(String tgc);
+    void setCookie(String cookie);
+    String getCaptcha();
+    boolean checkCaptcha(String captcha, String profiledId);
+    String courseName2Id(String profiledId, String name);
+    boolean isAvailable(String profiledId);
+    boolean fuckCourse(String profiledId, String lessonId);
 };
 
 

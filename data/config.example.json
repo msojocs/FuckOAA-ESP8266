@@ -1,9 +1,11 @@
 {
-    "cookie": "cookie",
     "ocr_server": "http://127.0.0.1:4006/vercode",
     "profiled_id": "4130",
     "course_name": "数字孪生技术",
-    "sta": ["FuckOAA", "12345678"],
-    "ap": ["wifi名称", "wifi密码"],
-    "id": "2019000000"
+    "ap": ["FuckOAA", "12345678"],
+    "sta": ["wifi名称", "wifi密码"],
+    "sid": "2019000000",
+    "spass": "2019000000",
+    "SSO_TGC": "",
+    "OAA_SESSION": ""
 }

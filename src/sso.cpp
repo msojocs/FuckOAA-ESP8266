@@ -176,23 +176,3 @@ String SSO::getTGC(){
 boolean SSO::isLogin(){
     return this->loginOK;
 }
-
-void SSO_Login(){
-    SSO sso(globalConfig["sid"], globalConfig["spass"]);
-    int r = 1;
-    sso.prepare();
-    if(!sso.isLogin()){
-        String captcha = sso.getCaptcha();
-        Serial.println("tupian：" + captcha);
-        String captchaCode = OCR_postOCRPic(captcha);
-        Serial.println("SSO验证码识别结果：" + captchaCode);
-        r = sso.login(captchaCode);
-        Serial.println("登录结果：" + String(r));
-    }
-    if(r == 1){
-        String tgc = sso.getTGC();
-        Serial.println("tgc: " + tgc);
-        OAA oaa;
-        oaa.loginByTGC(tgc);
-    }
-}
