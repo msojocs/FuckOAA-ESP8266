@@ -22,7 +22,7 @@ private:
     String SSO_Execution;
     String SSO_SESSION;
     String SSO_TGC = globalConfig["SSO_TGC"];
-    boolean loginOK;
+    boolean loginOK = false;
 public:
     SSO(String id, String password);
     ~SSO();
