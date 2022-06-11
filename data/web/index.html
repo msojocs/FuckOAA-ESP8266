@@ -17,10 +17,11 @@
     <div>
         <div>
             <h3>验证码识别服务器</h3>
-            <form id="stuInfo" onsubmit="return saveConfig(this), false" >
+            <form id="serverInfo" onsubmit="return saveConfig(this), false" >
                 <label for="ocrServer">服务器：</label>
                 <input id="ocrServer" name="ocrServer" /><br />
                 <input type="submit" value="保存" />
+                &nbsp;<span style="color:green"></span>
             </form>
         </div>
         <br />
@@ -29,11 +30,12 @@
             <form id="stuInfo" onsubmit="return saveConfig(this), false" >
                 <label for="sid">学号：</label>
                 <input id="sid" name="sid" /><br />
-                <label for="spass">密码(暂时无用)：</label>
+                <label for="spass">密码：</label>
                 <input id="spass" name="spass" type="password" /><br />
                 <label for="cookie">cookie：</label>
                 <input id="cookie" name="cookie" type="text" /><br />
                 <input type="submit" value="保存" />
+                &nbsp;<span style="color:green"></span>
             </form>
         </div>
         <br />
@@ -45,6 +47,7 @@
                 <label for="courseName">课程：</label>
                 <input id="courseName" name="courseName" /><br />
                 <button >保存</button>
+                &nbsp;<span style="color:green"></span>
             </form>
         </div>
     </div>
@@ -79,7 +82,8 @@
             }
         }
         function saveConfig(e){
-            // e.preventDefault();
+            console.log(e)
+            e.lastElementChild.textContent = "请求中"
             const form = new FormData(e)
             let data = []
             form.forEach((v, k)=>{
@@ -89,6 +93,7 @@
             console.log(data)
             HTTP.post('/saveConfig', data).then(res=>{
                 console.log(res)
+                e.lastElementChild.textContent = res.responseText
             }).catch(err=>{
                 console.error(err)
             })

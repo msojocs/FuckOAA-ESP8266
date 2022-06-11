@@ -15,6 +15,7 @@ AsyncWebServer server(80);
 const char* PARAM_MESSAGE = "message";
 
 void notFound(AsyncWebServerRequest *request) {
+    Serial.println("url: " + request->url());
     request->send(404, "text/plain", "Not found");
 }
 
@@ -23,23 +24,7 @@ void Server_Start()
     Serial.print("IP Address: ");
     Serial.println(WiFi.localIP());
 
-    server.on("/", HTTP_GET, [](AsyncWebServerRequest *request){
-        AsyncResponseStream *response = request->beginResponseStream("text/html");
-        // Serial.println("index.html");
-        response->setCode(200);
-        if(LittleFS.begin()){
-            Serial.println("read");
-            File file = LittleFS.open("/index.html", "r");
-            char buff[128] = {0};
-            while (file.available())
-            {
-                int size = file.readBytes(buff, 128);
-                response->write(buff, size);
-            }
-
-        }
-        request->send(response);
-    });
+    server.serveStatic("/", LittleFS, "/web/").setDefaultFile("index.html");
 
     // Send a GET request to <IP>/get?message=<message>
     server.on("/startFuck", HTTP_GET, [] (AsyncWebServerRequest *request) {
