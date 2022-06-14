@@ -3,7 +3,6 @@
 #include "storage.h"
 #include "cuit.h"
 
-
 /**
  * https://github.com/me-no-dev/ESPAsyncWebServer#important-things-to-remember
  * 异步服务器内部不能有delay yield
@@ -49,6 +48,20 @@ void Server_Start()
         if(!LittleFS.begin()){
             request->send(500, "text/plain; charset=utf-8", "文件系统错误！");
             return ;
+        }
+        if (request->hasParam("wifiName", true)) {
+            globalConfig["sta"][0] = request->getParam("wifiName", true)->value();
+            WIFI_Status = 0;
+        }
+        if (request->hasParam("wifiPass", true)) {
+            globalConfig["sta"][1] = request->getParam("wifiPass", true)->value();
+            WIFI_Status = 0;
+        }
+        if (request->hasParam("apName", true)) {
+            globalConfig["ap"][0] = request->getParam("apName", true)->value();
+        }
+        if (request->hasParam("apPass", true)) {
+            globalConfig["ap"][1] = request->getParam("apPass", true)->value();
         }
         if (request->hasParam("sid", true)) {
             globalConfig["sid"] = request->getParam("sid", true)->value();

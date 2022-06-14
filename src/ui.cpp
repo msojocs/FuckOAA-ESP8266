@@ -27,6 +27,7 @@ void UI::setNum(String num){
     u8g2.sendBuffer();					// transfer internal memory to the display
 }
 void UI::addNotice(String notice){
+    Serial.println("添加：" + notice);
     log.push_back(notice);
     if(log.size() > 3)log.pop_front();
 
@@ -39,14 +40,18 @@ void UI::addNotice(String notice){
     u8g2.setDrawColor(1);
     for ( it = log.begin(); it != log.end(); it++)
     {
-        u8g2.setCursor(0, 33 + 15 * (it - log.begin()));
-        u8g2.print(*it);	// write something to the internal memory
+        u8g2.drawUTF8(0, 33 + 15 * (it - log.begin()), (*it).c_str());	// write something to the internal memory
     }
-    
+    u8g2.sendBuffer();
 }
 void UI::setIP(String ip){
     char str[ip.length() + 1];
     ip.toCharArray(str, ip.length()+1);
+    // 清空区域
+    u8g2.setDrawColor(0);
+    
+    u8g2.drawBox(0, 10, 128, 10);
+    u8g2.setDrawColor(1);
     u8g2.drawStr(0, 20, str);	// write something to the internal memory
     u8g2.sendBuffer();					// transfer internal memory to the display
 }

@@ -100,7 +100,7 @@ String SSO::getCaptcha(){
  * 使用验证码登录统一中心
  * 
  * @param captchaCode 验证码
- * @return -2未知错误|1登录成功|2验证码无效|3用户名或密码错误
+ * @return -2未知错误|1登录成功|2验证码无效|3用户名或密码错误|4锁定
  * 
  * */
 int SSO::login(String& captchaCode){
@@ -151,6 +151,10 @@ int SSO::login(String& captchaCode){
                     // 用户名或密码错误
                     https.end();
                     return 3;
+                }else if(buffer.indexOf("账号被锁定") != -1){
+                    // 账号被锁定
+                    https.end();
+                    return 4;
                 }
                 if(buffer.indexOf("execution") != -1){
                     int start = buffer.indexOf("value=\"");

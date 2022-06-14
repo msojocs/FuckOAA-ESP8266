@@ -16,6 +16,30 @@
     </div>
     <div>
         <div>
+            <h3>WIFI信息</h3>
+            <form id="wifiInfo" onsubmit="return saveConfig(this), false" >
+                <label for="wifiName">WIFI名称：</label>
+                <input id="wifiName" name="wifiName" /><br />
+                <label for="wifiPass">WIFI密码：</label>
+                <input id="wifiPass" name="wifiPass" /><br />
+                <input type="submit" value="保存" />
+                &nbsp;<span style="color:green"></span>
+            </form>
+        </div>
+        <br />
+        <div>
+            <h3>热点信息</h3>
+            <form id="apInfo" onsubmit="return saveConfig(this), false" >
+                <label for="apName">热点帐号：</label>
+                <input id="apName" name="apName" /><br />
+                <label for="apPass">热点密码：</label>
+                <input id="apPass" name="apPass" /><br />
+                <input type="submit" value="保存" />
+                &nbsp;<span style="color:green"></span>
+            </form>
+        </div>
+        <br />
+        <div>
             <h3>验证码识别服务器</h3>
             <form id="serverInfo" onsubmit="return saveConfig(this), false" >
                 <label for="ocrServer">服务器：</label>
@@ -115,6 +139,10 @@
                 for(let k in config){
                     map[k] && (document.getElementById(map[k]).value = config[k])
                 }
+                document.getElementById("apName").value = config.ap[0]
+                document.getElementById("apPass").value = config.ap[1]
+                document.getElementById("wifiName").value = config.sta[0]
+                document.getElementById("wifiPass").value = config.sta[1]
             })
         })()
     </script>

@@ -17,6 +17,7 @@ CuitStatus_t CUIT_STATUS;
 
 CUIT_STATUS_CB cuitStatusCB[CUIT_STATUS_COUNT] = {nullptr};
 void CUIT_SSO_LOGIN_F(){
+    ui.addNotice("登录统一认证中心");
     SSO sso(globalConfig["sid"], globalConfig["spass"]);
     sso.prepare();
     if(sso.isLogin()){
@@ -25,32 +26,46 @@ void CUIT_SSO_LOGIN_F(){
     }
     if(!sso.isLogin()){
         int r;
+        ui.addNotice("获取验证码");
         String captcha = sso.getCaptcha();
         Serial.println("tupian：" + captcha);
         String captchaCode = OCR_postOCRPic(captcha);
         Serial.println("SSO验证码识别结果：" + captchaCode);
+        ui.addNotice("登录......");
         r = sso.login(captchaCode);
         Serial.println("登录结果：" + String(r));
         if(r == 1){
+            ui.addNotice("登录成功");
             CUIT_STATUS = CUIT_OAA_LOGIN;
             return;
         }
         if(r == 3){
+            ui.addNotice("用户名或密码错误");
+            CUIT_STATUS = CUIT_NO_ACTION;
+            return;
+        }
+        if(r == 4){
+            ui.addNotice("账户锁定");
             CUIT_STATUS = CUIT_NO_ACTION;
             return;
         }
     }
+    ui.addNotice("已登录");
 
 }
 void CUIT_OAA_LOGIN_F(){
+    ui.addNotice("登录教务处");
     OAA oaa;
     int r = oaa.loginByTGC(globalConfig["SSO_TGC"]);
     if(r == 1){
+        ui.addNotice("登录成功");
         CUIT_STATUS = CUIT_OAA_CAPTCHA;
+        return;
     }
+    ui.addNotice("登录失败");
 }
 void CUIT_OAA_CAPTCHA_F(){
-    ui.addNotice("尝试获取识别验证码");
+    ui.addNotice("尝试获取验证码");
     OAA oaa;
     String captchaCode;
     while (true)
@@ -85,8 +100,10 @@ void CUIT_OAA_FUCK_F(){
     {
         boolean result = oaa.isAvailable(globalConfig["profiled_id"]);
         Serial.println("isAvailable: " + String(result));
-        if (result)
+        if (result){
+            ui.addNotice("可以选课");
             break;
+        }
 
         if(CUIT_STATUS != CUIT_OAA_FUCK){
             ui.addNotice("异常终止 :(");
@@ -98,7 +115,7 @@ void CUIT_OAA_FUCK_F(){
 
     // 获取lessonId
     Serial.println("获取lessonId");
-    ui.addNotice("获取ID: " + (String)globalConfig["course_name"]);
+    ui.addNotice("获取" + (String)globalConfig["course_name"] + "的ID");
     String lessonId = oaa.courseName2Id(globalConfig["profiled_id"], globalConfig["course_name"]);
     Serial.println("获取lessonId: " + lessonId);
     delay(200);
