@@ -4,6 +4,7 @@
 #include <ArduinoJson.h>
 #include <LittleFS.h>
 
+// 全局配置
 extern JsonObject globalConfig;
 
 /**

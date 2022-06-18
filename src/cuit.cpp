@@ -14,8 +14,10 @@ CuitStatus_t CUIT_STATUS;
 // ================================================================================
 // ================================================================================
 
-
+// 状态回调
 CUIT_STATUS_CB cuitStatusCB[CUIT_STATUS_COUNT] = {nullptr};
+
+// 统一中心登录操作
 void CUIT_SSO_LOGIN_F(){
     ui.addNotice("登录统一认证中心");
     SSO sso(globalConfig["sid"], globalConfig["spass"]);
@@ -53,6 +55,8 @@ void CUIT_SSO_LOGIN_F(){
     ui.addNotice("已登录");
 
 }
+
+// 教务处登录操作
 void CUIT_OAA_LOGIN_F(){
     ui.addNotice("登录教务处");
     OAA oaa;
@@ -64,6 +68,8 @@ void CUIT_OAA_LOGIN_F(){
     }
     ui.addNotice("登录失败");
 }
+
+// 教务处的验证码获取及识别
 void CUIT_OAA_CAPTCHA_F(){
     ui.addNotice("尝试获取验证码");
     OAA oaa;
@@ -92,6 +98,8 @@ void CUIT_OAA_CAPTCHA_F(){
         delay(100);
     }
 }
+
+// 抢课执行主体
 void CUIT_OAA_FUCK_F(){
     // 检测开放状态
     ui.addNotice("检测选课是否开放");
@@ -146,13 +154,11 @@ void CUIT_OAA_FUCK_F(){
         delay(200);
     }
 }
-void CUIT_Init(boolean onlyData){
-    if(!onlyData){
-        cuitStatusCB[CUIT_SSO_LOGIN] = CUIT_SSO_LOGIN_F;
-        cuitStatusCB[CUIT_OAA_LOGIN] = CUIT_OAA_LOGIN_F;
-        cuitStatusCB[CUIT_OAA_CAPTCHA] = CUIT_OAA_CAPTCHA_F;
-        cuitStatusCB[CUIT_OAA_FUCK] = CUIT_OAA_FUCK_F;
-    }
+void CUIT_Init(){
+    cuitStatusCB[CUIT_SSO_LOGIN] = CUIT_SSO_LOGIN_F;
+    cuitStatusCB[CUIT_OAA_LOGIN] = CUIT_OAA_LOGIN_F;
+    cuitStatusCB[CUIT_OAA_CAPTCHA] = CUIT_OAA_CAPTCHA_F;
+    cuitStatusCB[CUIT_OAA_FUCK] = CUIT_OAA_FUCK_F;
 }
 
 void CUIT_Monitor(){

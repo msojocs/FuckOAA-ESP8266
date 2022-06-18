@@ -6,5 +6,14 @@
 #include <ArduinoJson.h>
 #include "storage.h"
 
+/**
+ * OCR识别验证码
+ * 
+ * @param captcha 验证码数据
+ * 
+ * @return String 验证码识别结果
+ * 
+ * */
 String OCR_postOCRPic(String& captcha);
+
 #endif

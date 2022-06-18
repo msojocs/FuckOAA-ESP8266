@@ -27,7 +27,6 @@ void Server_Start()
 
     // Send a GET request to <IP>/get?message=<message>
     server.on("/startFuck", HTTP_GET, [] (AsyncWebServerRequest *request) {
-        CUIT_Init(true);
         CUIT_STATUS = CUIT_SSO_LOGIN;
         request->send(200, "text/plain", "Hello ");
         // request->send(200, "text/plain", "Hello " + String(test));

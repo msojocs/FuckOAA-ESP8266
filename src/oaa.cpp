@@ -8,11 +8,6 @@ OAA::OAA(/* args */)
 OAA::~OAA()
 {
 }
-/**
- * 使用TGC登录教务处
- * 
- * @return 1登录成功|-1错误
- * */
 int OAA::loginByTGC(String tgc){
     WiFiClient httpClient;
     WiFiClientSecure httpsClient;

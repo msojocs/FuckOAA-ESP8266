@@ -42,7 +42,9 @@ public:
      * 
      * */
     int login(String& captchaCode);
+    // 取到tgc
     String getTGC();
+    // 是否登录状态
     boolean isLogin();
 };
 
