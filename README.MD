@@ -18,8 +18,8 @@ Docker镜像相关源代码在这里(仅供参考,可忽略): https://github.com
 
 1. 重命名 `data/config.example.json` 为 `data/config.json`
 2. 修改配置, 参数获取暂时参考: https://www.jysafe.cn/4498.air
-3. 将程序写入ESP8266
-4. 上传配置到ESP8266
+3. 将程序写入ESP8266 (PlatformIO -> General -> Upload)
+4. 上传配置到ESP8266 (PlatformIO -> Platform -> Upload Filesystem Image)
 
 ## 已实现
 
